@@ -1,4 +1,5 @@
-FROM phusion/baseimage:0.9.16
+#FROM phusion/baseimage
+FROM i386/debian:buster
 MAINTAINER archedraft
 
 # Set correct environment variables
@@ -15,8 +16,12 @@ ENV LANGUAGE en_US.UTF-8
  usermod -d /config nobody && \
  chown -R nobody:users /home
 
-RUN apt-get update &&  apt-get -y install xvfb x11vnc xdotool wget supervisor
+RUN apt update && apt -y install xvfb x11vnc xdotool software-properties-common gnupg apt-transport-https net-tools fluxbox xfonts-base xterm cabextract wget supervisor
+RUN wget -qnc https://dl.winehq.org/wine-builds/Release.key && apt-key add Release.key && apt-key add Release.key && apt -y install wine
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+RUN wget -O /usr/local/bin/winetricks https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+RUN chmod +x /usr/local/bin/winetricks
 
 ENV WINEPREFIX /root/prefix32
 ENV WINEARCH win32
@@ -26,6 +31,6 @@ WORKDIR /root/
 ADD novnc /root/novnc/
 
 # Expose Port
-EXPOSE 8080
+EXPOSE 8080 5900
 
-CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
